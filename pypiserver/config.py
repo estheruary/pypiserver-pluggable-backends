@@ -43,9 +43,7 @@ import re
 import sys
 import textwrap
 import typing as t
-from distutils.util import strtobool as strtoint
-
-import pkg_resources
+from pkgutil import get_data
 
 from pypiserver.backend import (
     BackendNotFound,
@@ -62,10 +60,14 @@ except ImportError:
     HtpasswdFile = None
 
 
-# The "strtobool" function in distutils does a nice job at parsing strings,
-# but returns an integer. This just wraps it in a boolean call so that we
-# get a bool.
-strtobool: t.Callable[[str], bool] = lambda val: bool(strtoint(val))
+# Preserve legacy boolean spellings without a runtime setuptools dependency.
+def strtobool(val: str) -> bool:
+    normalized = val.lower()
+    if normalized in ("y", "yes", "t", "true", "on", "1"):
+        return True
+    if normalized in ("n", "no", "f", "false", "off", "0"):
+        return False
+    raise ValueError(f"invalid truth value {val!r}")
 
 
 # Specify defaults here so that we can use them in tests &c. and not need
@@ -150,9 +152,10 @@ def health_endpoint_arg(arg: str) -> str:
 def html_file_arg(arg: t.Optional[str]) -> str:
     """Parse the provided HTML file and return its contents."""
     if arg is None or arg == "pypiserver/welcome.html":
-        return pkg_resources.resource_string(__name__, "welcome.html").decode(
-            "utf-8"
-        )
+        data = get_data("pypiserver", "welcome.html")
+        if data is None:
+            raise FileNotFoundError("Packaged welcome.html is missing")
+        return data.decode("utf-8")
     with open(arg, "r", encoding="utf-8") as f:
         msg = f.read()
     return msg

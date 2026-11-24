@@ -5,12 +5,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 import itertools
 import os
 import sys
-from distutils.version import LooseVersion
 from pathlib import Path
 from subprocess import call
 from xmlrpc.client import Server
-
-import pip
 
 from .backend import listdir
 from .core import PkgFile
@@ -113,8 +110,8 @@ class PipCmd:
     @staticmethod
     def update_root(pip_version):
         """Yield an appropriate root command depending on pip version."""
-        # legacy_pip = StrictVersion(pip_version) < StrictVersion('10.0')
-        legacy_pip = LooseVersion(pip_version) < LooseVersion("10.0")
+        # The command changed with pip 10, including its prereleases.
+        legacy_pip = int(pip_version.split(".", 1)[0]) < 10
         for part in ("pip", "-q"):
             yield part
         yield "install" if legacy_pip else "download"
@@ -137,6 +134,12 @@ class PipCmd:
 
 def update_package(pkg, destdir, dry_run=False):
     """Print and optionally execute a package update."""
+    try:
+        import pip
+    except ImportError as exc:
+        raise RuntimeError(
+            "Package updates require the optional 'update' extra"
+        ) from exc
     print(
         f"# update {pkg.pkgname} from {pkg.replaces.version} to {pkg.version}"
     )

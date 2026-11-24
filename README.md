@@ -1210,3 +1210,17 @@ may want to familiarize with:
 **pypiserver** contains a copy of [bottle](http://bottlepy.org/) which is available under the
 MIT license, and the remaining part is distributed under the zlib/libpng license.
 See the **LICENSE.txt** file.
+
+## Optional package-update tooling
+
+Serving an index, accepting uploads, and providing package downloads do not
+require pip or setuptools in the server environment. The optional
+`pypi-server update` management command requires the `update` extra:
+
+```bash
+python -m pip install 'pypiserver[update]'
+```
+
+This moves the previous unconditional pip requirement to an explicit extra.
+Existing installations using `update` should install that extra when upgrading.
+Client-side pip/uv installations and twine/uv uploads are unaffected.

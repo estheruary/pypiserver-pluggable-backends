@@ -14,7 +14,7 @@ tests_require = [
 ]
 
 setup_requires = ["setuptools", "setuptools-git >= 0.3", "wheel >= 0.25.0"]
-install_requires = ["pip>=7"]
+install_requires = []
 
 
 def read_file(rel_path: str):
@@ -47,7 +47,11 @@ setup(
     python_requires=">=3.6",
     install_requires=install_requires,
     setup_requires=setup_requires,
-    extras_require={"passlib": ["passlib>=1.6"], "cache": ["watchdog"]},
+    extras_require={
+        "passlib": ["passlib>=1.6"],
+        "cache": ["watchdog"],
+        "update": ["pip>=7"],
+    },
     tests_require=tests_require,
     url="https://github.com/pypiserver/pypiserver",
     maintainer=(
